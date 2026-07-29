@@ -92,6 +92,8 @@ Phase 7 adds the orchestrator module: typed graph state, stub node functions, a 
 
 Phase 8 adds the first event spine shape: `agent_events` ORM/migration support, an `AgentEvent` contract, event emission, and ordered trace reconstruction.
 
+Phase 9 adds provider-independent LLM plumbing: versioned prompt templates, prompt registry, model router, BudgetGuard, fake structured LLM provider, and event recording for `llm.call`.
+
 Run the current backend checks with:
 
 ```bash
