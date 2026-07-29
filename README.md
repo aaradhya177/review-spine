@@ -116,6 +116,8 @@ Phase 19 expands frontend operational views with finding cards, HITL action cont
 
 Phase 20 adds security hardening basics: threat model, secret masking, prompt-injection assessment, and RBAC dependency hooks.
 
+Phase 21 adds reliability primitives: retry, circuit breaker, timeout wrapper, and idempotency guard.
+
 Run the current backend checks with:
 
 ```bash
