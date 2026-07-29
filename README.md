@@ -114,6 +114,8 @@ Phase 18 adds the Next.js dashboard shell with reviews, review detail, HITL, tra
 
 Phase 19 expands frontend operational views with finding cards, HITL action controls, status badges, loading states, and a budget summary.
 
+Phase 20 adds security hardening basics: threat model, secret masking, prompt-injection assessment, and RBAC dependency hooks.
+
 Run the current backend checks with:
 
 ```bash
