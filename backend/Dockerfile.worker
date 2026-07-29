@@ -1,0 +1,13 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+COPY pyproject.toml ./
+COPY backend ./backend
+
+RUN python -m pip install --no-cache-dir -e .
+
+ENV PYTHONPATH=/app/backend
+
+CMD ["python", "-m", "arq", "app.job_queue.arq_worker.WorkerSettings"]
+

@@ -126,6 +126,8 @@ Phase 24 adds a local webhook demo that signs a fixture payload, posts it throug
 
 Phase 25 adds production-readiness documentation covering startup order, implemented surfaces, known risks, and next deployment decisions.
 
+Phase 26 adds deployable infrastructure scaffolding: backend, worker, and frontend Dockerfiles plus local docker-compose services.
+
 Run the current backend checks with:
 
 ```bash
