@@ -98,6 +98,8 @@ Phase 10 adds the code memory ingestion lane: `code_chunks` and `repo_file_index
 
 Phase 11 adds hybrid retrieval: local vector scoring, keyword search, reciprocal rank fusion, and structured retrieved context for later specialist agents.
 
+Phase 12 adds the specialist agent base framework: shared agent input/result contracts, retrieval + prompt + LLM orchestration, finding validation, retry/timeout handling, event emission, and safe error results.
+
 Run the current backend checks with:
 
 ```bash
