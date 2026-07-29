@@ -122,6 +122,8 @@ Phase 22 adds a local evaluation harness with golden cases, finding matching, re
 
 Phase 23 adds CI/CD scaffolding: GitHub Actions for backend tests and frontend build, local `check_all` script, and release/prompt-change guidance.
 
+Phase 24 adds a local webhook demo that signs a fixture payload, posts it through the FastAPI ingress, and prints the queued review job.
+
 Run the current backend checks with:
 
 ```bash

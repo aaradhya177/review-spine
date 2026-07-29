@@ -1,0 +1,22 @@
+{
+  "action": "opened",
+  "repository": {
+    "id": 1,
+    "full_name": "acme/shop",
+    "default_branch": "main",
+    "clone_url": "https://github.com/acme/shop.git"
+  },
+  "pull_request": {
+    "id": 2,
+    "number": 7,
+    "title": "Add checkout flow",
+    "draft": false,
+    "head": {
+      "sha": "abcdef123"
+    },
+    "base": {
+      "sha": "123456789"
+    }
+  }
+}
+
