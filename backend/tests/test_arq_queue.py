@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 
 from app.job_queue import ARQReviewQueue, ReviewJob
-from app.job_queue.arq_worker import run_review_job
+from app.job_queue.arq_worker import InMemoryJobLifecycleRecorder, run_review_job
 
 
 def make_job() -> ReviewJob:
@@ -34,6 +34,11 @@ class FakeWorkflowRunner:
         return {"workflow_id": workflow_id, "status": "done"}
 
 
+class FailingWorkflowRunner:
+    async def run(self, workflow_id: str, input: dict) -> dict:
+        raise RuntimeError("workflow exploded")
+
+
 @pytest.mark.asyncio
 async def test_arq_queue_enqueues_stable_job_payload() -> None:
     redis_pool = FakeRedisPool()
@@ -52,14 +57,33 @@ async def test_arq_queue_enqueues_stable_job_payload() -> None:
 @pytest.mark.asyncio
 async def test_worker_passes_job_to_workflow_runner() -> None:
     runner = FakeWorkflowRunner()
+    recorder = InMemoryJobLifecycleRecorder()
     job = make_job()
 
     result = await run_review_job(
-        {"workflow_runner": runner},
+        {"workflow_runner": runner, "job_lifecycle_recorder": recorder},
         job.model_dump(mode="json"),
     )
 
     assert result == {"workflow_id": "review:delivery-1", "status": "done"}
     assert runner.calls[0][0] == "review:delivery-1"
     assert runner.calls[0][1]["pull_request_number"] == 7
+    assert [record["status"] for record in recorder.records] == ["started", "completed"]
 
+
+@pytest.mark.asyncio
+async def test_worker_records_failure_before_retry_or_dead_letter() -> None:
+    recorder = InMemoryJobLifecycleRecorder()
+    job = make_job()
+
+    with pytest.raises(RuntimeError, match="workflow exploded"):
+        await run_review_job(
+            {
+                "workflow_runner": FailingWorkflowRunner(),
+                "job_lifecycle_recorder": recorder,
+            },
+            job.model_dump(mode="json"),
+        )
+
+    assert [record["status"] for record in recorder.records] == ["started", "failed"]
+    assert recorder.records[-1]["detail"] == "workflow exploded"

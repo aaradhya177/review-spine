@@ -84,8 +84,16 @@ Phase 3 adds the relational truth lane: async SQLAlchemy setup, review/finding/H
 
 Phase 4 adds GitHub webhook ingress: HMAC verification, pull request payload parsing, delivery idempotency, supported action filtering, and enqueue handoff through a queue interface.
 
+Phase 5 adds the Redis/ARQ queue path: stable review job IDs, an ARQ queue adapter, a worker entrypoint, placeholder workflow handoff, retry settings, and lifecycle recording for started/completed/failed jobs.
+
 Run the current backend checks with:
 
 ```bash
 python -m pytest
+```
+
+Run the worker after installing project dependencies and starting Redis:
+
+```powershell
+.\scripts\run_worker.ps1
 ```

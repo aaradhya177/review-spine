@@ -12,6 +12,38 @@ class WorkflowRunner(Protocol):
         """Run review workflow and return serializable state."""
 
 
+class JobLifecycleRecorder(Protocol):
+    async def record(
+        self,
+        job: ReviewJob,
+        *,
+        status: str,
+        detail: str | None = None,
+    ) -> None:
+        """Record worker lifecycle status for a review job."""
+
+
+class InMemoryJobLifecycleRecorder:
+    def __init__(self) -> None:
+        self.records: list[dict[str, Any]] = []
+
+    async def record(
+        self,
+        job: ReviewJob,
+        *,
+        status: str,
+        detail: str | None = None,
+    ) -> None:
+        self.records.append(
+            {
+                "job_id": job.job_id,
+                "delivery_id": job.delivery_id,
+                "status": status,
+                "detail": detail,
+            }
+        )
+
+
 class PlaceholderWorkflowRunner:
     async def run(self, workflow_id: str, input: dict[str, Any]) -> dict[str, Any]:
         logger.info("placeholder workflow accepted job", extra={"workflow_id": workflow_id})
@@ -26,6 +58,7 @@ async def startup(ctx: dict[str, Any]) -> None:
     settings = Settings()
     ctx["settings"] = settings
     ctx.setdefault("workflow_runner", PlaceholderWorkflowRunner())
+    ctx.setdefault("job_lifecycle_recorder", InMemoryJobLifecycleRecorder())
     logger.info("review worker started")
 
 
@@ -36,6 +69,10 @@ async def shutdown(ctx: dict[str, Any]) -> None:
 async def run_review_job(ctx: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
     job = ReviewJob.model_validate(payload)
     runner: WorkflowRunner = ctx.get("workflow_runner", PlaceholderWorkflowRunner())
+    recorder: JobLifecycleRecorder = ctx.get(
+        "job_lifecycle_recorder",
+        InMemoryJobLifecycleRecorder(),
+    )
     logger.info(
         "review job started",
         extra={
@@ -44,7 +81,15 @@ async def run_review_job(ctx: dict[str, Any], payload: dict[str, Any]) -> dict[s
             "pull_request_number": job.pull_request_number,
         },
     )
-    result = await runner.run(job.job_id, job.model_dump(mode="json"))
+    await recorder.record(job, status="started")
+    try:
+        result = await runner.run(job.job_id, job.model_dump(mode="json"))
+    except Exception as exc:
+        await recorder.record(job, status="failed", detail=str(exc))
+        logger.exception("review job failed", extra={"workflow_id": job.job_id})
+        raise
+
+    await recorder.record(job, status="completed")
     logger.info("review job completed", extra={"workflow_id": job.job_id})
     return result
 
@@ -58,4 +103,4 @@ class WorkerSettings:
     max_tries = 3
     retry_jobs = True
     queue_name = "review-spine"
-
+    allow_abort_jobs = True
