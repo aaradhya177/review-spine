@@ -2,6 +2,7 @@ from uuid import uuid4
 
 import pytest
 
+from app.core.workflow_engine import WorkflowInput, WorkflowState
 from app.job_queue import ARQReviewQueue, ReviewJob
 from app.job_queue.arq_worker import InMemoryJobLifecycleRecorder, run_review_job
 
@@ -29,14 +30,26 @@ class FakeWorkflowRunner:
     def __init__(self) -> None:
         self.calls: list[tuple[str, dict]] = []
 
-    async def run(self, workflow_id: str, input: dict) -> dict:
+    async def run(self, workflow_id: str, input: WorkflowInput) -> WorkflowState:
         self.calls.append((workflow_id, input))
-        return {"workflow_id": workflow_id, "status": "done"}
+        return WorkflowState(workflow_id=workflow_id, status="done", input=input)
+
+    async def resume(self, workflow_id: str, state: WorkflowState) -> WorkflowState:
+        return state
+
+    async def get_state(self, workflow_id: str) -> WorkflowState | None:
+        return None
 
 
 class FailingWorkflowRunner:
-    async def run(self, workflow_id: str, input: dict) -> dict:
+    async def run(self, workflow_id: str, input: WorkflowInput) -> WorkflowState:
         raise RuntimeError("workflow exploded")
+
+    async def resume(self, workflow_id: str, state: WorkflowState) -> WorkflowState:
+        return state
+
+    async def get_state(self, workflow_id: str) -> WorkflowState | None:
+        return None
 
 
 @pytest.mark.asyncio
@@ -61,13 +74,14 @@ async def test_worker_passes_job_to_workflow_runner() -> None:
     job = make_job()
 
     result = await run_review_job(
-        {"workflow_runner": runner, "job_lifecycle_recorder": recorder},
+        {"workflow_engine": runner, "job_lifecycle_recorder": recorder},
         job.model_dump(mode="json"),
     )
 
-    assert result == {"workflow_id": "review:delivery-1", "status": "done"}
+    assert result["workflow_id"] == "review:delivery-1"
+    assert result["status"] == "done"
     assert runner.calls[0][0] == "review:delivery-1"
-    assert runner.calls[0][1]["pull_request_number"] == 7
+    assert runner.calls[0][1].pull_request_number == 7
     assert [record["status"] for record in recorder.records] == ["started", "completed"]
 
 
@@ -80,6 +94,7 @@ async def test_worker_records_failure_before_retry_or_dead_letter() -> None:
         await run_review_job(
             {
                 "workflow_runner": FailingWorkflowRunner(),
+                "workflow_engine": FailingWorkflowRunner(),
                 "job_lifecycle_recorder": recorder,
             },
             job.model_dump(mode="json"),

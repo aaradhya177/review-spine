@@ -2,14 +2,10 @@ import logging
 from typing import Any, Protocol
 
 from app.config import Settings
+from app.core.workflow_engine import StubWorkflowEngine, WorkflowEngine, WorkflowInput
 from app.job_queue.contracts import ReviewJob
 
 logger = logging.getLogger(__name__)
-
-
-class WorkflowRunner(Protocol):
-    async def run(self, workflow_id: str, input: dict[str, Any]) -> dict[str, Any]:
-        """Run review workflow and return serializable state."""
 
 
 class JobLifecycleRecorder(Protocol):
@@ -44,20 +40,10 @@ class InMemoryJobLifecycleRecorder:
         )
 
 
-class PlaceholderWorkflowRunner:
-    async def run(self, workflow_id: str, input: dict[str, Any]) -> dict[str, Any]:
-        logger.info("placeholder workflow accepted job", extra={"workflow_id": workflow_id})
-        return {
-            "workflow_id": workflow_id,
-            "status": "accepted",
-            "input": input,
-        }
-
-
 async def startup(ctx: dict[str, Any]) -> None:
     settings = Settings()
     ctx["settings"] = settings
-    ctx.setdefault("workflow_runner", PlaceholderWorkflowRunner())
+    ctx.setdefault("workflow_engine", StubWorkflowEngine())
     ctx.setdefault("job_lifecycle_recorder", InMemoryJobLifecycleRecorder())
     logger.info("review worker started")
 
@@ -68,7 +54,7 @@ async def shutdown(ctx: dict[str, Any]) -> None:
 
 async def run_review_job(ctx: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
     job = ReviewJob.model_validate(payload)
-    runner: WorkflowRunner = ctx.get("workflow_runner", PlaceholderWorkflowRunner())
+    workflow_engine: WorkflowEngine = ctx.get("workflow_engine", StubWorkflowEngine())
     recorder: JobLifecycleRecorder = ctx.get(
         "job_lifecycle_recorder",
         InMemoryJobLifecycleRecorder(),
@@ -83,7 +69,8 @@ async def run_review_job(ctx: dict[str, Any], payload: dict[str, Any]) -> dict[s
     )
     await recorder.record(job, status="started")
     try:
-        result = await runner.run(job.job_id, job.model_dump(mode="json"))
+        workflow_input = WorkflowInput.model_validate(job.model_dump(mode="json"))
+        result = await workflow_engine.run(job.job_id, workflow_input)
     except Exception as exc:
         await recorder.record(job, status="failed", detail=str(exc))
         logger.exception("review job failed", extra={"workflow_id": job.job_id})
@@ -91,7 +78,7 @@ async def run_review_job(ctx: dict[str, Any], payload: dict[str, Any]) -> dict[s
 
     await recorder.record(job, status="completed")
     logger.info("review job completed", extra={"workflow_id": job.job_id})
-    return result
+    return result.model_dump(mode="json")
 
 
 class WorkerSettings:

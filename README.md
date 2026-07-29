@@ -86,6 +86,8 @@ Phase 4 adds GitHub webhook ingress: HMAC verification, pull request payload par
 
 Phase 5 adds the Redis/ARQ queue path: stable review job IDs, an ARQ queue adapter, a worker entrypoint, placeholder workflow handoff, retry settings, and lifecycle recording for started/completed/failed jobs.
 
+Phase 6 adds the shared workflow engine contract: serializable workflow input/state models, a `WorkflowEngine` protocol, and a deterministic stub engine used by the ARQ worker until LangGraph is wired in.
+
 Run the current backend checks with:
 
 ```bash
