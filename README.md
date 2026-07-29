@@ -108,6 +108,8 @@ Phase 15 adds the GitHub review posting surface: formatter, review request/comme
 
 Phase 16 adds the HITL API surface for listing, approving, rejecting, escalating, and disputing human-review items.
 
+Phase 17 adds economics reporting: event-backed cost summaries, budget-state API, and rollup SQL for agent health and per-PR cost.
+
 Run the current backend checks with:
 
 ```bash
