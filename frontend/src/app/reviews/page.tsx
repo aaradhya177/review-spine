@@ -1,42 +1,14 @@
-import Link from "next/link";
-import { StatusBadge } from "@/components/StatusBadge";
+import { CheckCircle2, Clock3, GitPullRequest, ShieldAlert } from "lucide-react";
 import { getReviews } from "@/lib/api";
+import { ReviewsTable } from "@/components/ReviewsTable";
 
 export default async function ReviewsPage() {
   const rows = await getReviews();
-  return (
-    <>
-      <h2 className="page-title">Reviews</h2>
-      <section className="panel">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Repository</th>
-              <th>PR</th>
-              <th>Status</th>
-              <th>Confidence</th>
-              <th>Cost</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((review) => (
-              <tr key={review.id}>
-                <td>
-                  <Link href={`/reviews/${review.id}`}>{review.repo}</Link>
-                </td>
-                <td>#{review.pr}</td>
-                <td>
-                  <StatusBadge status={review.status} />
-                </td>
-                <td>{Math.round(review.confidence * 100)}%</td>
-                <td>${review.cost.toFixed(3)}</td>
-                <td>{review.createdAt}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-    </>
-  );
+  const needsReview = rows.filter((review) => review.status === "awaiting_human").length;
+  const openFindings = rows.reduce((sum, review) => sum + review.findings.length, 0);
+  return <>
+    <div className="page-heading"><div><p className="eyebrow">Workspace / Reviews</p><h2 className="page-title">Review desk</h2><p className="page-description">A focused queue for code changes that need your judgment.</p></div><div className="heading-actions"><button className="button"><GitPullRequest className="icon" />Connect repository</button></div></div>
+    <div className="metric-grid"><div className="metric"><div className="metric-label">Open reviews</div><div className="metric-value">{rows.length}</div><div className="metric-note"><GitPullRequest className="icon" /> All repositories</div></div><div className="metric"><div className="metric-label">Needs your review</div><div className="metric-value">{needsReview}</div><div className="metric-note"><Clock3 className="icon" /> Awaiting a decision</div></div><div className="metric"><div className="metric-label">Open findings</div><div className="metric-value">{openFindings}</div><div className="metric-note"><ShieldAlert className="icon" /> Across current queue</div></div><div className="metric"><div className="metric-label">Posted today</div><div className="metric-value">{rows.filter((review) => review.status === "posted").length}</div><div className="metric-note"><CheckCircle2 className="icon" /> Review complete</div></div></div>
+    <ReviewsTable rows={rows} />
+  </>;
 }
