@@ -106,6 +106,8 @@ Phase 14 adds deterministic aggregation: merge, deduplication, confidence scorin
 
 Phase 15 adds the GitHub review posting surface: formatter, review request/comment models, and a transport-backed client tested without live credentials.
 
+Phase 16 adds the HITL API surface for listing, approving, rejecting, escalating, and disputing human-review items.
+
 Run the current backend checks with:
 
 ```bash
