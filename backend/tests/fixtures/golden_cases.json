@@ -1,0 +1,14 @@
+[
+  {
+    "id": "security-auth-bypass",
+    "diff": "diff --git a/auth.py b/auth.py",
+    "expected_findings": [
+      {
+        "category": "auth-bypass",
+        "file_path": "auth.py",
+        "severity": "CRITICAL"
+      }
+    ]
+  }
+]
+

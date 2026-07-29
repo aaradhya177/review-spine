@@ -118,6 +118,8 @@ Phase 20 adds security hardening basics: threat model, secret masking, prompt-in
 
 Phase 21 adds reliability primitives: retry, circuit breaker, timeout wrapper, and idempotency guard.
 
+Phase 22 adds a local evaluation harness with golden cases, finding matching, recall metrics, missed-critical detection, and a regression gate.
+
 Run the current backend checks with:
 
 ```bash
