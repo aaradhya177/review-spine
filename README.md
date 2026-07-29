@@ -90,6 +90,8 @@ Phase 6 adds the shared workflow engine contract: serializable workflow input/st
 
 Phase 7 adds the orchestrator module: typed graph state, stub node functions, a LangGraph-capable engine, and deterministic local graph tests for the initial fan-out/join shape.
 
+Phase 8 adds the first event spine shape: `agent_events` ORM/migration support, an `AgentEvent` contract, event emission, and ordered trace reconstruction.
+
 Run the current backend checks with:
 
 ```bash

@@ -1,6 +1,9 @@
 from datetime import UTC, datetime
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.workflow_engine import WorkflowInput, WorkflowState
+from app.observability.events import AgentEvent, emit_agent_event
 from app.orchestrator.graph import build_langgraph_app, run_local_graph
 from app.orchestrator.state import ReviewGraphState
 
@@ -8,12 +11,19 @@ from app.orchestrator.state import ReviewGraphState
 class LangGraphWorkflowEngine:
     """WorkflowEngine implementation backed by LangGraph when available."""
 
-    def __init__(self, *, use_langgraph: bool = True):
+    def __init__(
+        self,
+        *,
+        use_langgraph: bool = True,
+        event_session: AsyncSession | None = None,
+    ):
         self.use_langgraph = use_langgraph
+        self.event_session = event_session
         self._app = None
         self.states: dict[str, WorkflowState] = {}
 
     async def run(self, workflow_id: str, input: WorkflowInput) -> WorkflowState:
+        await self._emit(input, agent="orchestrator", event_type="span.start")
         graph_state: ReviewGraphState = {
             "workflow_id": workflow_id,
             "input": input.model_dump(mode="json"),
@@ -23,9 +33,25 @@ class LangGraphWorkflowEngine:
             "errors": [],
             "status": "running",
         }
-        result = await self._run_graph(graph_state)
-        state = self._to_workflow_state(result, input=input)
+        try:
+            result = await self._run_graph(graph_state)
+            state = self._to_workflow_state(result, input=input)
+        except Exception:
+            await self._emit(
+                input,
+                agent="orchestrator",
+                event_type="span.end",
+                outcome="failed",
+            )
+            raise
+
         self.states[workflow_id] = state
+        await self._emit(
+            input,
+            agent="orchestrator",
+            event_type="span.end",
+            outcome=state.status,
+        )
         return state
 
     async def resume(self, workflow_id: str, state: WorkflowState) -> WorkflowState:
@@ -69,3 +95,27 @@ class LangGraphWorkflowEngine:
             errors=state.get("errors", []),
         )
 
+    async def _emit(
+        self,
+        input: WorkflowInput,
+        *,
+        agent: str,
+        event_type: str,
+        outcome: str | None = None,
+    ) -> None:
+        if self.event_session is None:
+            return
+        await emit_agent_event(
+            self.event_session,
+            AgentEvent(
+                review_id=input.webhook_event_id,
+                agent=agent,
+                event_type=event_type,
+                outcome=outcome,
+                payload={
+                    "delivery_id": input.delivery_id,
+                    "repo_full_name": input.repo_full_name,
+                    "pull_request_number": input.pull_request_number,
+                },
+            ),
+        )

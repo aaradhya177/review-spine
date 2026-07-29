@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, JSON, String, Text, UniqueConstraint
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, JSON, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from app.models.enums import AgentType, FindingSeverity, HitlStatus, ReviewStatus
@@ -160,9 +160,33 @@ class IdempotencyRecord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
 
 
+class AgentEventRecord(Base):
+    __tablename__ = "agent_events"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_uuid)
+    ts: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=now_utc,
+        nullable=False,
+        index=True,
+    )
+    review_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    agent: Mapped[str] = mapped_column(String(80), nullable=False)
+    span_id: Mapped[str] = mapped_column(String(36), nullable=False, default=new_uuid)
+    parent_span: Mapped[str | None] = mapped_column(String(36))
+    event_type: Mapped[str] = mapped_column(String(80), nullable=False)
+    model: Mapped[str | None] = mapped_column(String(120))
+    tokens_in: Mapped[int | None] = mapped_column(Integer)
+    tokens_out: Mapped[int | None] = mapped_column(Integer)
+    cost_usd: Mapped[float | None] = mapped_column(Numeric(10, 6))
+    latency_ms: Mapped[int | None] = mapped_column(Integer)
+    outcome: Mapped[str | None] = mapped_column(String(80))
+    confidence: Mapped[float | None] = mapped_column(Float)
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+
+
 # Imported late only for type checkers/editors; runtime conversion imports inside method.
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.findings import Finding
-

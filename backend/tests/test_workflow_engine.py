@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 
 from app.core import StubWorkflowEngine, WorkflowInput, WorkflowState
@@ -10,7 +12,7 @@ def make_input() -> WorkflowInput:
         pull_request_number=7,
         head_sha="abcdef123",
         base_sha="123456789",
-        webhook_event_id="event-1",
+        webhook_event_id=str(uuid4()),
     )
 
 
@@ -40,4 +42,3 @@ async def test_stub_workflow_engine_resume_updates_state() -> None:
     assert resumed.workflow_id == "review:delivery-1"
     assert resumed.status == "completed"
     assert await engine.get_state("review:delivery-1") == resumed
-
