@@ -110,6 +110,8 @@ Phase 16 adds the HITL API surface for listing, approving, rejecting, escalating
 
 Phase 17 adds economics reporting: event-backed cost summaries, budget-state API, and rollup SQL for agent health and per-PR cost.
 
+Phase 18 adds the Next.js dashboard shell with reviews, review detail, HITL, trace, and economics routes backed by mock data.
+
 Run the current backend checks with:
 
 ```bash
