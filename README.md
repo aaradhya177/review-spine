@@ -120,6 +120,8 @@ Phase 21 adds reliability primitives: retry, circuit breaker, timeout wrapper, a
 
 Phase 22 adds a local evaluation harness with golden cases, finding matching, recall metrics, missed-critical detection, and a regression gate.
 
+Phase 23 adds CI/CD scaffolding: GitHub Actions for backend tests and frontend build, local `check_all` script, and release/prompt-change guidance.
+
 Run the current backend checks with:
 
 ```bash
