@@ -102,6 +102,8 @@ Phase 12 adds the specialist agent base framework: shared agent input/result con
 
 Phase 13 adds the four concrete specialist agents: security, quality, tests, and docs.
 
+Phase 14 adds deterministic aggregation: merge, deduplication, confidence scoring, auto-post routing, low-confidence HITL routing, and critical escalation.
+
 Run the current backend checks with:
 
 ```bash
