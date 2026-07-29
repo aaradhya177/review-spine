@@ -185,6 +185,45 @@ class AgentEventRecord(Base):
     payload: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
 
 
+class CodeChunkRecord(Base):
+    __tablename__ = "code_chunks"
+    __table_args__ = (
+        UniqueConstraint(
+            "repo",
+            "path",
+            "chunk_index",
+            name="code_chunks_unique_idx",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_uuid)
+    repo: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    path: Mapped[str] = mapped_column(Text, nullable=False)
+    symbol: Mapped[str | None] = mapped_column(String(255))
+    chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    embedding: Mapped[list[float]] = mapped_column(JSON, nullable=False)
+    token_count: Mapped[int | None] = mapped_column(Integer)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+
+
+class RepoFileIndexRecord(Base):
+    __tablename__ = "repo_file_index"
+    __table_args__ = (
+        UniqueConstraint("repo", "path", name="repo_file_index_unique_idx"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_uuid)
+    repo: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    path: Mapped[str] = mapped_column(Text, nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    last_indexed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=now_utc,
+    )
+
+
 # Imported late only for type checkers/editors; runtime conversion imports inside method.
 from typing import TYPE_CHECKING
 

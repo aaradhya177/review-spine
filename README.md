@@ -94,6 +94,8 @@ Phase 8 adds the first event spine shape: `agent_events` ORM/migration support, 
 
 Phase 9 adds provider-independent LLM plumbing: versioned prompt templates, prompt registry, model router, BudgetGuard, fake structured LLM provider, and event recording for `llm.call`.
 
+Phase 10 adds the code memory ingestion lane: `code_chunks` and `repo_file_index` schema, deterministic fake embeddings, chunking, content hashing, changed-file skipping, and replace-on-change upserts.
+
 Run the current backend checks with:
 
 ```bash
