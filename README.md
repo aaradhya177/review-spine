@@ -104,6 +104,8 @@ Phase 13 adds the four concrete specialist agents: security, quality, tests, and
 
 Phase 14 adds deterministic aggregation: merge, deduplication, confidence scoring, auto-post routing, low-confidence HITL routing, and critical escalation.
 
+Phase 15 adds the GitHub review posting surface: formatter, review request/comment models, and a transport-backed client tested without live credentials.
+
 Run the current backend checks with:
 
 ```bash
