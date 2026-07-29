@@ -100,6 +100,8 @@ Phase 11 adds hybrid retrieval: local vector scoring, keyword search, reciprocal
 
 Phase 12 adds the specialist agent base framework: shared agent input/result contracts, retrieval + prompt + LLM orchestration, finding validation, retry/timeout handling, event emission, and safe error results.
 
+Phase 13 adds the four concrete specialist agents: security, quality, tests, and docs.
+
 Run the current backend checks with:
 
 ```bash
