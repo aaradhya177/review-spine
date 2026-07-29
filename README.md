@@ -96,6 +96,8 @@ Phase 9 adds provider-independent LLM plumbing: versioned prompt templates, prom
 
 Phase 10 adds the code memory ingestion lane: `code_chunks` and `repo_file_index` schema, deterministic fake embeddings, chunking, content hashing, changed-file skipping, and replace-on-change upserts.
 
+Phase 11 adds hybrid retrieval: local vector scoring, keyword search, reciprocal rank fusion, and structured retrieved context for later specialist agents.
+
 Run the current backend checks with:
 
 ```bash

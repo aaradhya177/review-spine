@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from math import sqrt
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -60,4 +61,56 @@ class TigerMemoryClient:
             query.order_by(CodeChunkRecord.path, CodeChunkRecord.chunk_index)
         )
         return list(result.scalars())
+
+    async def vector_search(
+        self,
+        *,
+        repo: str,
+        query_embedding: list[float],
+        top_k: int,
+    ) -> list[tuple[CodeChunkRecord, float]]:
+        chunks = await self.list_chunks(repo=repo)
+        scored = [
+            (chunk, cosine_similarity(query_embedding, chunk.embedding))
+            for chunk in chunks
+        ]
+        return sorted(scored, key=lambda item: item[1], reverse=True)[:top_k]
+
+    async def keyword_search(
+        self,
+        *,
+        repo: str,
+        query: str,
+        top_k: int,
+    ) -> list[tuple[CodeChunkRecord, float]]:
+        terms = tokenize(query)
+        chunks = await self.list_chunks(repo=repo)
+        scored = []
+        for chunk in chunks:
+            content_terms = tokenize(chunk.content + " " + chunk.path)
+            score = sum(content_terms.count(term) for term in terms)
+            if score > 0:
+                scored.append((chunk, float(score)))
+        return sorted(scored, key=lambda item: item[1], reverse=True)[:top_k]
+
+
+def tokenize(text: str) -> list[str]:
+    return [
+        part.lower()
+        for part in "".join(char if char.isalnum() else " " for char in text).split()
+    ]
+
+
+def cosine_similarity(left: list[float], right: list[float]) -> float:
+    if not left or not right:
+        return 0.0
+    length = min(len(left), len(right))
+    left = left[:length]
+    right = right[:length]
+    dot = sum(a * b for a, b in zip(left, right, strict=True))
+    left_norm = sqrt(sum(a * a for a in left))
+    right_norm = sqrt(sum(b * b for b in right))
+    if left_norm == 0 or right_norm == 0:
+        return 0.0
+    return dot / (left_norm * right_norm)
 
