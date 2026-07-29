@@ -88,6 +88,8 @@ Phase 5 adds the Redis/ARQ queue path: stable review job IDs, an ARQ queue adapt
 
 Phase 6 adds the shared workflow engine contract: serializable workflow input/state models, a `WorkflowEngine` protocol, and a deterministic stub engine used by the ARQ worker until LangGraph is wired in.
 
+Phase 7 adds the orchestrator module: typed graph state, stub node functions, a LangGraph-capable engine, and deterministic local graph tests for the initial fan-out/join shape.
+
 Run the current backend checks with:
 
 ```bash
