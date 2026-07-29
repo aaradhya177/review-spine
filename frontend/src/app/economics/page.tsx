@@ -1,10 +1,17 @@
-import { getEconomics } from "@/lib/api";
+import { getBudget, getEconomics } from "@/lib/api";
 
 export default async function EconomicsPage() {
   const rows = await getEconomics();
+  const budget = await getBudget();
   return (
     <>
       <h2 className="page-title">Economics</h2>
+      <section className="panel stack" style={{ marginBottom: 16 }}>
+        <div className="row">
+          <span>Daily budget</span>
+          <strong>${budget.dailyCost.toFixed(2)} / ${budget.dailyLimit.toFixed(2)}</strong>
+        </div>
+      </section>
       <section className="panel">
         <table className="table">
           <thead>
@@ -30,4 +37,3 @@ export default async function EconomicsPage() {
     </>
   );
 }
-

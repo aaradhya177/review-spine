@@ -112,6 +112,8 @@ Phase 17 adds economics reporting: event-backed cost summaries, budget-state API
 
 Phase 18 adds the Next.js dashboard shell with reviews, review detail, HITL, trace, and economics routes backed by mock data.
 
+Phase 19 expands frontend operational views with finding cards, HITL action controls, status badges, loading states, and a budget summary.
+
 Run the current backend checks with:
 
 ```bash

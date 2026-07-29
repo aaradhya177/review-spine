@@ -1,4 +1,4 @@
-import { economics, reviews, traceEvents } from "./mockData";
+import { budget, economics, reviews, traceEvents } from "./mockData";
 
 export async function getReviews() {
   return reviews;
@@ -16,3 +16,6 @@ export async function getEconomics() {
   return economics;
 }
 
+export async function getBudget() {
+  return budget;
+}

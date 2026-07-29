@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StatusBadge } from "@/components/StatusBadge";
 import { getReviews } from "@/lib/api";
 
 export default async function ReviewsPage() {
@@ -26,9 +27,7 @@ export default async function ReviewsPage() {
                 </td>
                 <td>#{review.pr}</td>
                 <td>
-                  <span className={`status ${review.status === "awaiting_human" ? "warn" : ""}`}>
-                    {review.status}
-                  </span>
+                  <StatusBadge status={review.status} />
                 </td>
                 <td>{Math.round(review.confidence * 100)}%</td>
                 <td>${review.cost.toFixed(3)}</td>
@@ -41,4 +40,3 @@ export default async function ReviewsPage() {
     </>
   );
 }
-

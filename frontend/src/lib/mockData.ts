@@ -6,6 +6,18 @@ export type ReviewRow = {
   confidence: number;
   cost: number;
   createdAt: string;
+  findings: FindingRow[];
+};
+
+export type FindingRow = {
+  id: string;
+  agent: string;
+  severity: string;
+  category: string;
+  file: string;
+  line: number;
+  summary: string;
+  confidence: number;
 };
 
 export const reviews: ReviewRow[] = [
@@ -17,6 +29,28 @@ export const reviews: ReviewRow[] = [
     confidence: 0.61,
     cost: 0.038,
     createdAt: "2026-07-30 09:20",
+    findings: [
+      {
+        id: "finding-1",
+        agent: "security",
+        severity: "HIGH",
+        category: "auth-bypass",
+        file: "backend/app/auth.py",
+        line: 88,
+        summary: "Role check is skipped for token refresh.",
+        confidence: 0.76,
+      },
+      {
+        id: "finding-2",
+        agent: "tests",
+        severity: "MEDIUM",
+        category: "missing-test",
+        file: "backend/tests/test_auth.py",
+        line: 12,
+        summary: "No regression test covers refresh denial.",
+        confidence: 0.68,
+      },
+    ],
   },
   {
     id: "review-2",
@@ -26,6 +60,7 @@ export const reviews: ReviewRow[] = [
     confidence: 0.91,
     cost: 0.024,
     createdAt: "2026-07-30 08:44",
+    findings: [],
   },
 ];
 
@@ -44,3 +79,7 @@ export const economics = [
   { agent: "tests", calls: 8, cost: 0.18, p95: 760 },
 ];
 
+export const budget = {
+  dailyCost: 0.93,
+  dailyLimit: 25,
+};
