@@ -124,6 +124,8 @@ Phase 23 adds CI/CD scaffolding: GitHub Actions for backend tests and frontend b
 
 Phase 24 adds a local webhook demo that signs a fixture payload, posts it through the FastAPI ingress, and prints the queued review job.
 
+Phase 25 adds production-readiness documentation covering startup order, implemented surfaces, known risks, and next deployment decisions.
+
 Run the current backend checks with:
 
 ```bash
