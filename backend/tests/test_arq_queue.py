@@ -3,8 +3,13 @@ from uuid import uuid4
 import pytest
 
 from app.core.workflow_engine import WorkflowInput, WorkflowState
+from app.config import Settings
 from app.job_queue import ARQReviewQueue, ReviewJob
-from app.job_queue.arq_worker import InMemoryJobLifecycleRecorder, run_review_job
+from app.job_queue.arq_worker import (
+    InMemoryJobLifecycleRecorder,
+    build_redis_settings,
+    run_review_job,
+)
 
 
 def make_job() -> ReviewJob:
@@ -65,6 +70,18 @@ async def test_arq_queue_enqueues_stable_job_payload() -> None:
     assert redis_pool.calls[0]["payload"]["repo_full_name"] == "acme/shop"
     assert redis_pool.calls[0]["kwargs"]["_job_id"] == "review:delivery-1"
     assert redis_pool.calls[0]["kwargs"]["_queue_name"] == "review-spine"
+
+
+def test_worker_redis_settings_use_configured_redis_url() -> None:
+    pytest.importorskip("arq")
+
+    redis_settings = build_redis_settings(
+        Settings(redis_url="redis://redis:6380/2", github_webhook_secret="test")
+    )
+
+    assert redis_settings.host == "redis"
+    assert redis_settings.port == 6380
+    assert redis_settings.database == 2
 
 
 @pytest.mark.asyncio

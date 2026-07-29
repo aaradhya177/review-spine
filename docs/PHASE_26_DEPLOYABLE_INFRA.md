@@ -8,6 +8,7 @@ Phase 26 adds containerization and local compose infrastructure.
 - `backend/Dockerfile.worker`
 - `frontend/Dockerfile`
 - `docker-compose.yml`
+- `.dockerignore`
 
 ## Local Run
 
@@ -26,6 +27,8 @@ Services:
 
 The compose file is local-first. Production should replace local Postgres with Tiger Cloud, configure real secrets, run migrations, and use a production Next.js start command after deployment packaging is finalized.
 
+The worker reads `REDIS_URL` through ARQ's `redis_settings`, so in compose it connects to the Redis service instead of container-local `localhost`. `.dockerignore` keeps local `node_modules`, Next.js build output, caches, logs, and local env files out of image build contexts.
+
 ## Validation
 
-`docker compose config` validates the compose file. Image build requires the Docker daemon to be running.
+`docker compose config` validates the compose file. With Docker running, `docker compose build backend worker frontend` builds the service images and `docker compose up -d` starts Postgres, Redis, backend, worker, and frontend.

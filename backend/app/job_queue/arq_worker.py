@@ -81,8 +81,18 @@ async def run_review_job(ctx: dict[str, Any], payload: dict[str, Any]) -> dict[s
     return result.model_dump(mode="json")
 
 
+def build_redis_settings(settings: Settings | None = None) -> Any:
+    from arq.connections import RedisSettings
+
+    return RedisSettings.from_dsn((settings or Settings()).redis_url)
+
+
 class WorkerSettings:
     functions = [run_review_job]
+    try:
+        redis_settings = build_redis_settings()
+    except ModuleNotFoundError:
+        redis_settings = None
     on_startup = startup
     on_shutdown = shutdown
     max_jobs = 10
