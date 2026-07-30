@@ -2,11 +2,15 @@ export type ReviewRow = {
   id: string;
   repo: string;
   pr: number;
+  title: string;
+  author: string;
   status: string;
   confidence: number;
   cost: number;
   createdAt: string;
   findings: FindingRow[];
+  decisionHistory: Record<string, string>[];
+  comments: Record<string, string>[];
 };
 
 export type FindingRow = {
@@ -18,6 +22,19 @@ export type FindingRow = {
   line: number;
   summary: string;
   confidence: number;
+  state?: string;
+};
+
+export type SettingsData = {
+  minimum_severity: string;
+  ignored_paths: string[];
+  notifications_enabled: boolean;
+};
+export type TraceEvent = {
+  id: string;
+  event: string;
+  status: string;
+  reviewId: string;
 };
 
 export const reviews: ReviewRow[] = [
@@ -25,10 +42,14 @@ export const reviews: ReviewRow[] = [
     id: "review-1",
     repo: "acme/shop",
     pr: 42,
+    title: "Refresh session tokens safely",
+    author: "Maya Chen",
     status: "awaiting_human",
     confidence: 0.61,
     cost: 0.038,
     createdAt: "2026-07-30 09:20",
+    decisionHistory: [],
+    comments: [],
     findings: [
       {
         id: "finding-1",
@@ -56,10 +77,14 @@ export const reviews: ReviewRow[] = [
     id: "review-2",
     repo: "acme/api",
     pr: 108,
+    title: "Tighten request validation",
+    author: "Jon Bell",
     status: "posted",
     confidence: 0.91,
     cost: 0.024,
     createdAt: "2026-07-30 08:44",
+    decisionHistory: [],
+    comments: [],
     findings: [],
   },
 ];

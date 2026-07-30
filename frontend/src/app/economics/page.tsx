@@ -1,39 +1,6 @@
+"use client";
+import { CircleDollarSign, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 import { getBudget, getEconomics } from "@/lib/api";
-
-export default async function EconomicsPage() {
-  const rows = await getEconomics();
-  const budget = await getBudget();
-  return (
-    <>
-      <h2 className="page-title">Economics</h2>
-      <section className="panel stack" style={{ marginBottom: 16 }}>
-        <div className="row">
-          <span>Daily budget</span>
-          <strong>${budget.dailyCost.toFixed(2)} / ${budget.dailyLimit.toFixed(2)}</strong>
-        </div>
-      </section>
-      <section className="panel">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Agent</th>
-              <th>Calls</th>
-              <th>Cost</th>
-              <th>p95 latency</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.agent}>
-                <td>{row.agent}</td>
-                <td>{row.calls}</td>
-                <td>${row.cost.toFixed(2)}</td>
-                <td>{row.p95}ms</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-    </>
-  );
-}
+type CostRow = { agent: string; llm_calls: number; cost_usd: number; p95_latency_ms: number | null };
+export default function EconomicsPage() { const [rows, setRows] = useState<CostRow[]>([]); const [dailyCost, setDailyCost] = useState(0); const [error, setError] = useState<string | null>(null); const dailyLimit = 25; useEffect(() => { void Promise.all([getEconomics(), getBudget()]).then(([costs, budget]) => { setRows(costs); setDailyCost(budget.daily_cost_usd); }).catch((err) => setError(err instanceof Error ? err.message : "Unable to load economics")); }, []); return <><div className="page-heading"><div><p className="eyebrow">Operations / Economics</p><h2 className="page-title">Economics</h2><p className="page-description">Understand review cost and model latency across the workspace.</p></div></div>{error ? <section className="panel empty"><div><strong>Could not load economics</strong><span>{error}</span><br /><button className="button" onClick={() => window.location.reload()}><RefreshCw className="icon" />Retry</button></div></section> : <><div className="metric-grid"><div className="metric"><div className="metric-label">24h spend</div><div className="metric-value">${dailyCost.toFixed(2)}</div><div className="metric-note"><CircleDollarSign className="icon" /> of ${dailyLimit.toFixed(2)} daily budget</div></div><div className="metric"><div className="metric-label">Budget used</div><div className="metric-value">{Math.round((dailyCost / dailyLimit) * 100)}%</div><div className="progress"><span style={{ width: `${Math.min(100, (dailyCost / dailyLimit) * 100)}%` }} /></div></div></div><section className="panel"><div className="panel-header"><div><h3 className="panel-title">Agent usage</h3><span className="panel-kicker">Last 24 hours</span></div></div>{rows.length === 0 ? <div className="empty"><div><strong>No model usage recorded</strong><span>Usage will appear after the next completed review.</span></div></div> : <div className="table-wrap"><table className="table"><thead><tr><th>Agent</th><th>Calls</th><th>Cost</th><th>p95 latency</th></tr></thead><tbody>{rows.map((row) => <tr key={row.agent}><td>{row.agent}</td><td>{row.llm_calls}</td><td>${row.cost_usd.toFixed(3)}</td><td>{row.p95_latency_ms === null ? "—" : `${row.p95_latency_ms}ms`}</td></tr>)}</tbody></table></div>}</section></>}</>; }

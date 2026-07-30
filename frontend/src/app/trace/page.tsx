@@ -1,19 +1,6 @@
+"use client";
+import { Activity, CheckCircle2, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 import { getTrace } from "@/lib/api";
-
-export default async function TracePage() {
-  const events = await getTrace();
-  return (
-    <>
-      <h2 className="page-title">Trace Viewer</h2>
-      <section className="panel stack">
-        {events.map((event, index) => (
-          <div className="row" key={event}>
-            <span>{index + 1}</span>
-            <strong>{event}</strong>
-          </div>
-        ))}
-      </section>
-    </>
-  );
-}
-
+import type { TraceEvent } from "@/lib/mockData";
+export default function TracePage() { const [events, setEvents] = useState<TraceEvent[]>([]); const [selected, setSelected] = useState<TraceEvent | null>(null); const [error, setError] = useState<string | null>(null); useEffect(() => { void getTrace().then(setEvents).catch((err) => setError(err instanceof Error ? err.message : "Unable to load trace")); }, []); return <><div className="page-heading"><div><p className="eyebrow">Observability / Trace</p><h2 className="page-title">Trace viewer</h2><p className="page-description">Follow the review lifecycle from webhook to final decision.</p></div></div>{error ? <section className="panel empty"><div><strong>Could not load trace</strong><span>{error}</span><br /><button className="button" onClick={() => window.location.reload()}><RefreshCw className="icon" />Retry</button></div></section> : <div className="split-grid"><section className="panel stack">{events.map((event, index) => <button className={`list-row trace-row ${selected?.id === event.id ? "selected" : ""}`} key={event.id} type="button" onClick={() => setSelected(event)}><span className="trace-index">{index + 1}</span><span><strong>{event.event}</strong><small>{event.status}</small></span><CheckCircle2 className="icon" /></button>)}</section><section className="panel trace-detail">{selected ? <><div className="panel-header"><div><h3 className="panel-title">{selected.event}</h3><span className="panel-kicker">Event details</span></div><Activity className="icon muted" /></div><div className="list-row"><span>Review</span><strong className="mono">{selected.reviewId}</strong></div><div className="list-row"><span>Status</span><span className="status"><span className="status-dot" />{selected.status}</span></div></> : <div className="empty"><div><Activity className="icon" /><strong>Select an event</strong><span>Choose a trace entry to inspect its details.</span></div></div>}</section></div>}</>; }

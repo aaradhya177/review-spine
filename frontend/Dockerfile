@@ -5,6 +5,8 @@ RUN npm ci
 
 FROM node:22-slim AS build
 WORKDIR /app
+ARG BACKEND_URL=http://backend:8000
+ENV BACKEND_URL=$BACKEND_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY frontend ./
 RUN npm run build
